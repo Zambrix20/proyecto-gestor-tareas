@@ -5,16 +5,66 @@ const loginButton = document.getElementById("login-btn")
 const emailInput = document.getElementById("email")
 const passwordInput = document.getElementById("password")
 const errorMsg = document.getElementById("error-msg")
+const errorText = document.getElementById("error-text")
+const emailError = document.getElementById("email-error")
+const passwordError = document.getElementById("password-error")
 
 function showError(msg) {
-    errorMsg.textContent = msg;
-    errorMsg.style.display = "block";
+    if (errorText) errorText.textContent = msg;
+    if (errorMsg) errorMsg.classList.add("show");
 }
 
+function hideError() {
+    if (errorMsg) errorMsg.classList.remove("show");
+}
+
+function validateFields() {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+    let isValid = true;
+
+    if (!email) {
+        if (emailError) emailError.classList.add("show");
+        isValid = false;
+    } else {
+        if (emailError) emailError.classList.remove("show");
+    }
+
+    if (!password) {
+        if (passwordError) passwordError.classList.add("show");
+        isValid = false;
+    } else {
+        if (passwordError) passwordError.classList.remove("show");
+    }
+
+    return isValid;
+}
+
+emailInput.addEventListener("input", () => {
+    if (emailError && emailError.classList.contains("show")) emailError.classList.remove("show");
+    hideError();
+});
+
+passwordInput.addEventListener("input", () => {
+    if (passwordError && passwordError.classList.contains("show")) passwordError.classList.remove("show");
+    hideError();
+});
+
+function handleEnterPress(event) {
+    if (event.key === "Enter") {
+        loginButton.click();
+    }
+}
+
+emailInput.addEventListener("keydown", handleEnterPress);
+passwordInput.addEventListener("keydown", handleEnterPress);
+
 registerButton.addEventListener("click", async () => {
-    const email = emailInput.value
-    const password = passwordInput.value
-    if (!email || !password) return showError("Completa todos los campos");
+    hideError();
+    if (!validateFields()) return;
+
+    const email = emailInput.value.trim()
+    const password = passwordInput.value.trim()
 
     const { data, error } = await supabaseClient.auth.signUp({ email, password })
     if (error) {
@@ -26,9 +76,11 @@ registerButton.addEventListener("click", async () => {
 })
 
 loginButton.addEventListener("click", async () => {
-    const email = emailInput.value
-    const password = passwordInput.value
-    if (!email || !password) return showError("Completa todos los campos");
+    hideError();
+    if (!validateFields()) return;
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
 
     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password })
     if (error) {
